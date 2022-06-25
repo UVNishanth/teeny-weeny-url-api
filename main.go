@@ -13,6 +13,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var urlDomain string
+
 type mapping struct {
 	URL   string `json:"URL"`
 	S_URL string `json:"shortURL"`
@@ -29,6 +31,7 @@ type serverConfig struct {
 		Host string `yaml:"host"`
 		Port string `yaml:"port"`
 	} `yaml:"server"`
+	URL_domain string `yaml:"url_domain"`
 }
 
 func createURL(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +44,7 @@ func createURL(w http.ResponseWriter, r *http.Request) {
 	s_url := hexa_string[:4]
 	var entry = mapping{URL: act_url, S_URL: s_url}
 	db = append(db, entry)
-	extended_string := "blah.back/" + s_url
+	extended_string := urlDomain + "/" + s_url
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(extended_string)
 }
@@ -78,6 +81,7 @@ func main() {
 		fmt.Println(err)
 	}
 	server_info := cfg.Server.Host + ":" + cfg.Server.Port
+	urlDomain = cfg.URL_domain
 	//fmt.Println(cfg.Server.Host)
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/create", createURL).Methods("POST")
